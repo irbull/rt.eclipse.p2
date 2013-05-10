@@ -169,9 +169,18 @@ public class EclipseInstallAction extends AbstractPublisherAction {
 	protected File[] computeRootFileExclusions(String configSpec) {
 		ExecutablesDescriptor executables = computeExecutables(configSpec);
 		File[] files = executables.getFiles();
-		File[] result = new File[files.length + 1];
-		System.arraycopy(files, 0, result, 0, files.length);
-		result[files.length] = executables.getIniLocation();
+		File[] result = null;
+		File launcherSymLink = executables.getSymLinkLocation();
+		if (launcherSymLink != null) {
+			result = new File[files.length + 2];
+			System.arraycopy(files, 0, result, 0, files.length);
+			result[files.length] = executables.getIniLocation();
+			result[files.length + 1] = launcherSymLink;
+		} else {
+			result = new File[files.length + 1];
+			System.arraycopy(files, 0, result, 0, files.length);
+			result[files.length] = executables.getIniLocation();
+		}
 		return result;
 	}
 

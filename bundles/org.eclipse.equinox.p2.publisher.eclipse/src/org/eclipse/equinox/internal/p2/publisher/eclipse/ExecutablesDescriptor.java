@@ -29,6 +29,7 @@ public class ExecutablesDescriptor {
 	private boolean temporary = false;
 	private final String os;
 	private File iniFile;
+	private File symLinkFile;
 
 	public static File findExecutable(String os, File root, String baseName) {
 		// TODO this may need to get more intelligent
@@ -118,6 +119,7 @@ public class ExecutablesDescriptor {
 		});
 		ExecutablesDescriptor result = new ExecutablesDescriptor(os, executable, location, files);
 		result.iniFile = new File(location, executable + ".ini"); //$NON-NLS-1$
+		result.symLinkFile = new File(location, executable);
 		return result;
 	}
 
@@ -197,6 +199,14 @@ public class ExecutablesDescriptor {
 
 	public File getIniLocation() {
 		return iniFile;
+	}
+
+	/**
+	 * Returns the Symbol Link to the executable on OSs that use a symbol
+	 * link for this purpose (currently on MacOS). Returns null on all other platforms.
+	 */
+	public File getSymLinkLocation() {
+		return symLinkFile;
 	}
 
 	public File getLocation() {
