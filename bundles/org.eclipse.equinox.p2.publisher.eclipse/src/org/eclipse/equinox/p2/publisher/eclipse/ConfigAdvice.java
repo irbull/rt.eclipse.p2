@@ -17,8 +17,8 @@ import org.eclipse.equinox.p2.publisher.AbstractAdvice;
 
 public class ConfigAdvice extends AbstractAdvice implements IConfigAdvice {
 
-	private ConfigData data;
-	private String configSpec;
+	private final ConfigData data;
+	private final String configSpec;
 
 	public ConfigAdvice(ConfigData data, String configSpec) {
 		this.data = data;
@@ -29,12 +29,17 @@ public class ConfigAdvice extends AbstractAdvice implements IConfigAdvice {
 		return data.getBundles();
 	}
 
+	@Override
 	protected String getConfigSpec() {
 		return configSpec;
 	}
 
 	public Map<String, String> getProperties() {
 		return CollectionUtils.toMap(data.getProperties());
+	}
+
+	public ConfigData getConfigData() {
+		return this.data;
 	}
 
 }

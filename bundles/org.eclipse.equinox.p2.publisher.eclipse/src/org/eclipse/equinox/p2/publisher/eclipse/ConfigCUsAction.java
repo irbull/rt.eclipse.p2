@@ -322,6 +322,19 @@ public class ConfigCUsAction extends AbstractPublisherAction {
 			filter = createFilterSpec(configSpec);
 		}
 
+		Collection<IConfigAdvice> configAdvice = publisherInfo.getAdvice(configSpec, false, id, version, IConfigAdvice.class);
+		int defaultStartLevel = BundleInfo.NO_LEVEL;
+
+		if (!configAdvice.isEmpty()) {
+			// See if we have any config advice that includes the default start level
+			// If multiple configu advice exists, take the last one (?)
+			for (IConfigAdvice advice : configAdvice) {
+				if (advice instanceof ConfigAdvice) {
+					defaultStartLevel = ((ConfigAdvice) advice).getConfigData().getInitialBundleStartLevel();
+				}
+			}
+		}
+
 		for (int i = 0; i < bundles.length; i++) {
 			GeneratorBundleInfo bundle = createGeneratorBundleInfo(bundles[i], result);
 			if (bundle == null)
@@ -339,7 +352,7 @@ public class ConfigCUsAction extends AbstractPublisherAction {
 				bundle.setMarkedAsStarted(false);
 				bundle.setSpecialConfigCommands("setProgramProperty(propName:org.eclipse.update.reconcile, propValue:false);"); //$NON-NLS-1$
 				bundle.setSpecialUnconfigCommands("setProgramProperty(propName:org.eclipse.update.reconcile, propValue:);"); //$NON-NLS-1$
-			} else if (bundle.getStartLevel() == BundleInfo.NO_LEVEL && !bundle.isMarkedAsStarted()) {
+			} else if ((bundle.getStartLevel() == BundleInfo.NO_LEVEL || bundle.getStartLevel() == defaultStartLevel) && !bundle.isMarkedAsStarted()) {
 				// this bundle does not require any particular configuration, the plug-in default IU will handle installing it
 				continue;
 			}
