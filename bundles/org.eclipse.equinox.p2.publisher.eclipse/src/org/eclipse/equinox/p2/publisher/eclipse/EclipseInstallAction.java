@@ -46,6 +46,7 @@ public class EclipseInstallAction extends AbstractPublisherAction {
 		this.start = start;
 	}
 
+	@Override
 	public IStatus perform(IPublisherInfo publisherInfo, IPublisherResult results, IProgressMonitor monitor) {
 		monitor = SubMonitor.convert(monitor);
 		this.info = publisherInfo;
@@ -191,8 +192,7 @@ public class EclipseInstallAction extends AbstractPublisherAction {
 
 	protected ExecutablesDescriptor computeExecutables(String configSpec) {
 		String os = AbstractPublisherAction.parseConfigSpec(configSpec)[1];
-		// TODO here we should not assume that the executable is called "eclipse"
-		return ExecutablesDescriptor.createDescriptor(os, "eclipse", computeExecutableLocation(configSpec)); //$NON-NLS-1$
+		return ExecutablesDescriptor.createDescriptor(os, executableName, computeExecutableLocation(configSpec)); //$NON-NLS-1$
 	}
 
 	protected File computeRootFileRoot(String configSpec) {
