@@ -96,7 +96,6 @@ public class RootFilesAction extends AbstractPublisherAction {
 		iu.setTouchpointType(PublisherHelper.TOUCHPOINT_NATIVE);
 		IProvidedCapability launcherCapability = MetadataFactory.createProvidedCapability(flavor + idBase, idPrefix, version);
 		iu.setCapabilities(new IProvidedCapability[] {PublisherHelper.createSelfCapability(iuId, version), launcherCapability});
-		result.addIU(MetadataFactory.createInstallableUnit(iu), IPublisherResult.ROOT);
 
 		// Create the CU that installs/configures the executable
 		InstallableUnitFragmentDescription cu = new InstallableUnitFragmentDescription();
@@ -118,13 +117,21 @@ public class RootFilesAction extends AbstractPublisherAction {
 		touchpointData.put("uninstall", unConfigurationData); //$NON-NLS-1$
 		processTouchpointAdvice(cu, touchpointData, info, configSpec);
 		IInstallableUnit unit = MetadataFactory.createInstallableUnit(cu);
-		result.addIU(unit, IPublisherResult.ROOT);
 
 		if ((info.getArtifactOptions() & (IPublisherInfo.A_INDEX | IPublisherInfo.A_PUBLISH)) > 0) {
 			// Create the artifact descriptor.  we have several files so no path on disk
 			IArtifactDescriptor descriptor = PublisherHelper.createArtifactDescriptor(info, key, null);
 			IRootFilesAdvice advice = getAdvice(configSpec);
-			publishArtifact(descriptor, advice.getIncludedFiles(), advice.getExcludedFiles(), info, createPrefixComputer(advice.getRoot()));
+			boolean published = publishArtifact(descriptor, advice.getIncludedFiles(), advice.getExcludedFiles(), info, createPrefixComputer(advice.getRoot()));
+			if (published) {
+				// Only publish the IUs if we actually published an artifact
+				result.addIU(MetadataFactory.createInstallableUnit(iu), IPublisherResult.ROOT);
+				result.addIU(unit, IPublisherResult.ROOT);
+			}
+		} else {
+			// Since we are not publishing artifacts, publish the IUs
+			result.addIU(MetadataFactory.createInstallableUnit(iu), IPublisherResult.ROOT);
+			result.addIU(unit, IPublisherResult.ROOT);
 		}
 	}
 

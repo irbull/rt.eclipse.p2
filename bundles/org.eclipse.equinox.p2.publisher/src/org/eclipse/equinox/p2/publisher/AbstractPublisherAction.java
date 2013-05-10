@@ -468,19 +468,20 @@ public abstract class AbstractPublisherAction implements IPublisherAction {
 	 * @param exclusions and folders to be excluded in the zip. files can be null.
 	 * @param publisherInfo the publisher info.
 	 * @param prefixComputer
+	 * @param returns true if an artifact was published, false otherwise
 	 */
-	protected void publishArtifact(IArtifactDescriptor descriptor, File[] inclusions, File[] exclusions, IPublisherInfo publisherInfo, IPathComputer prefixComputer) {
+	protected boolean publishArtifact(IArtifactDescriptor descriptor, File[] inclusions, File[] exclusions, IPublisherInfo publisherInfo, IPathComputer prefixComputer) {
 		// no files to publish so this is done.
 		if (inclusions == null || inclusions.length < 1)
-			return;
+			return false;
 		// if the destination already contains the descriptor, there is nothing to do.
 		IArtifactRepository destination = publisherInfo.getArtifactRepository();
 		if (destination == null || destination.contains(descriptor))
-			return;
+			return false;
 		// if all we are doing is indexing things then add the descriptor and get on with it
 		if ((publisherInfo.getArtifactOptions() & IPublisherInfo.A_PUBLISH) == 0) {
 			destination.addDescriptor(descriptor);
-			return;
+			return false;
 		}
 
 		// TODO need to implement the overwrite story in the repos
@@ -491,12 +492,15 @@ public abstract class AbstractPublisherAction implements IPublisherAction {
 		try {
 			OutputStream output = destination.getOutputStream(descriptor);
 			if (output == null)
-				return;
+				return false;
 			output = new BufferedOutputStream(output);
 			tempFile = File.createTempFile("p2.generator", ""); //$NON-NLS-1$ //$NON-NLS-2$
 			FileUtils.zip(inclusions, exclusions, tempFile, prefixComputer);
-			if (output != null)
-				FileUtils.copyStream(new BufferedInputStream(new FileInputStream(tempFile)), true, output, true);
+			if (output != null) {
+				int bytesWritten = FileUtils.copyStream(new BufferedInputStream(new FileInputStream(tempFile)), true, output, true);
+				return bytesWritten > 0;
+			}
+
 		} catch (ProvisionException e) {
 			LogHelper.log(e.getStatus());
 		} catch (IOException e) {
@@ -506,6 +510,7 @@ public abstract class AbstractPublisherAction implements IPublisherAction {
 			if (tempFile != null)
 				tempFile.delete();
 		}
+		return false;
 	}
 
 	/**
