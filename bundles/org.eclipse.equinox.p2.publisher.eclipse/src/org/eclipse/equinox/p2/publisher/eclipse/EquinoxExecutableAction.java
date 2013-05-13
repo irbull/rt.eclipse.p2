@@ -48,6 +48,7 @@ public class EquinoxExecutableAction extends AbstractPublisherAction {
 	protected Version version;
 	protected ExecutablesDescriptor executables;
 	protected String flavor;
+	private String executableName;
 
 	protected EquinoxExecutableAction() {
 		//hidden
@@ -59,6 +60,7 @@ public class EquinoxExecutableAction extends AbstractPublisherAction {
 		this.idBase = idBase == null ? "org.eclipse" : idBase; //$NON-NLS-1$
 		this.version = version;
 		this.flavor = flavor;
+		this.executableName = executables.getExecutableName() == null ? "eclipse" : executables.getExecutableName(); //$NON-NLS-1$
 	}
 
 	@Override
@@ -283,7 +285,7 @@ public class EquinoxExecutableAction extends AbstractPublisherAction {
 		File[] list = descriptor.getFiles();
 		for (int i = 0; i < list.length; i++)
 			mungeExecutableFileName(list[i], descriptor);
-		descriptor.setExecutableName("eclipse", true); //$NON-NLS-1$
+		descriptor.setExecutableName(executableName, true);
 	}
 
 	// TODO This method is a temporary hack to rename the launcher.exe files
@@ -292,11 +294,11 @@ public class EquinoxExecutableAction extends AbstractPublisherAction {
 	// launchers.
 	private void mungeExecutableFileName(File file, ExecutablesDescriptor descriptor) {
 		if (file.getName().equals("launcher")) { //$NON-NLS-1$
-			File newFile = new File(file.getParentFile(), "eclipse"); //$NON-NLS-1$
+			File newFile = new File(file.getParentFile(), executableName);
 			file.renameTo(newFile);
 			descriptor.replace(file, newFile);
 		} else if (file.getName().equals("launcher.exe")) { //$NON-NLS-1$
-			File newFile = new File(file.getParentFile(), "eclipse.exe"); //$NON-NLS-1$
+			File newFile = new File(file.getParentFile(), executableName + ".exe"); //$NON-NLS-1$
 			file.renameTo(newFile);
 			descriptor.replace(file, newFile);
 		}
